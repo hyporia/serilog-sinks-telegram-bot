@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <!-- NuGet package metadata -->
-    <PackageId>Serilog.Sinks.TelegramBot</PackageId>
+    <PackageId>Serilog.Sinks.Telegram.Bot</PackageId>
     <Version>0.1.0</Version>
     <Authors>@hyporia</Authors>
     <Description>A Serilog sink that sends log events to a Telegram chat via the Telegram Bot API.</Description>
