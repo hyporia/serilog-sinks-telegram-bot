@@ -109,6 +109,8 @@ The sink can be configured from `IConfiguration` using
 dotnet add package Serilog.Settings.Configuration
 ```
 
+A minimal configuration only needs the token and chat id:
+
 ```jsonc
 {
   "Serilog": {
@@ -119,10 +121,37 @@ dotnet add package Serilog.Settings.Configuration
         "Name": "TelegramBot",
         "Args": {
           "botToken": "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11",
-          "chatId": "987654321",
+          "chatId": "987654321"
+        }
+      }
+    ]
+  }
+}
+```
+
+Every option is bindable. `TimeSpan` values use the `hh:mm:ss` format:
+
+```jsonc
+{
+  "Serilog": {
+    "Using": [ "Serilog.Sinks.TelegramBot" ],
+    "WriteTo": [
+      {
+        "Name": "TelegramBot",
+        "Args": {
+          "botToken": "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11",
+          "chatId": "@my_channel",
           "restrictedToMinimumLevel": "Warning",
           "parseMode": "Html",
-          "outputTemplate": "{Level:u3} {Timestamp:yyyy-MM-dd HH:mm:ss}{NewLine}{Message:lj}{NewLine}{Exception}"
+          "outputTemplate": "{Level:u3} {Timestamp:yyyy-MM-dd HH:mm:ss}{NewLine}{Message:lj}{NewLine}{Exception}",
+          "disableNotification": true,
+          "messageThreadId": 42,
+          "batchSizeLimit": 10,
+          "period": "00:00:02",
+          "queueLimit": 10000,
+          "requestTimeout": "00:00:30",
+          "maxSendRetries": 3,
+          "apiBaseUrl": "https://api.telegram.org"
         }
       }
     ]
@@ -153,15 +182,11 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 ```
 
 > [!NOTE]
-> The `Using` array (or an assembly-scanning setup) is what lets
-> Serilog discover the `TelegramBot` sink. The `Args` keys map to the method
-> parameters above — `botToken`, `chatId`, `restrictedToMinimumLevel`, `parseMode`,
-> and `outputTemplate`. The batching, timeout, and retry knobs
-> (`BatchSizeLimit`, `Period`, `QueueLimit`, `RequestTimeout`, `MaxSendRetries`,
-> `MessageThreadId`, `DisableNotification`, `ApiBaseUrl`) are currently only
-> available through the code-based `TelegramBotSinkOptions` overload. Keep secrets
-> such as `botToken` out of source control — use user secrets, environment
-> variables, or a secrets manager.
+> The `Using` array (or an assembly-scanning setup) is what lets Serilog discover
+> the `TelegramBot` sink. Each `Args` key maps to a parameter of the same name on
+> `WriteTo.TelegramBot(...)`, and any subset may be supplied — omitted keys fall
+> back to their defaults. Keep secrets such as `botToken` out of source control —
+> use user secrets, environment variables, or a secrets manager.
 
 ## Diagnostics
 
