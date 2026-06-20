@@ -12,15 +12,18 @@ namespace Serilog.Sinks.TelegramBot.Tests
 {
     public class TelegramBotSinkTests
     {
-        private sealed class RecordingClient : ITelegramBotClient
+        private sealed class RecordingClient : ITelegramBotClient, IDisposable
         {
             public List<string> Messages { get; } = new();
+            public bool Disposed { get; private set; }
 
             public Task SendMessageAsync(string text, CancellationToken cancellationToken = default)
             {
                 Messages.Add(text);
                 return Task.CompletedTask;
             }
+
+            public void Dispose() => Disposed = true;
         }
 
         private static TelegramBotSinkOptions Options() => new()
@@ -112,6 +115,45 @@ namespace Serilog.Sinks.TelegramBot.Tests
             });
 
             Assert.Equal(2, client.Messages.Count);
+        }
+
+        [Fact]
+        public async Task EmitBatchAsync_EscapesMarkdownV2EndToEnd()
+        {
+            var client = new RecordingClient();
+            var options = Options();
+            options.ParseMode = TelegramParseMode.MarkdownV2;
+            var sink = new TelegramBotSink(options, client);
+
+            await sink.EmitBatchAsync(new[] { Event(LogEventLevel.Warning, "a_b.") });
+
+            Assert.Equal("a\\_b\\.", Assert.Single(client.Messages));
+        }
+
+        [Fact]
+        public async Task EmitBatchAsync_AllFiltered_SendsNothing()
+        {
+            var client = new RecordingClient();
+            var sink = new TelegramBotSink(Options(), client);
+
+            await sink.EmitBatchAsync(new[]
+            {
+                Event(LogEventLevel.Debug, "a"),
+                Event(LogEventLevel.Verbose, "b")
+            });
+
+            Assert.Empty(client.Messages);
+        }
+
+        [Fact]
+        public void Dispose_DoesNotDisposeInjectedClient()
+        {
+            var client = new RecordingClient();
+            var sink = new TelegramBotSink(Options(), client);
+
+            sink.Dispose();
+
+            Assert.False(client.Disposed);
         }
 
         [Fact]

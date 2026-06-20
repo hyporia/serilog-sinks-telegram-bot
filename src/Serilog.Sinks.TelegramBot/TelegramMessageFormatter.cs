@@ -29,16 +29,61 @@ namespace Serilog.Sinks.TelegramBot
         }
 
         /// <summary>
-        /// Truncates a message to <see cref="MaxMessageLength"/>, appending an ellipsis
-        /// marker when content was dropped.
+        /// Truncates an already-escaped message to <see cref="MaxMessageLength"/>,
+        /// appending an ellipsis marker when content was dropped. The cut point is
+        /// chosen so it never splits a UTF-16 surrogate pair or a partial escape
+        /// sequence (an HTML entity in <see cref="TelegramParseMode.Html"/> mode or a
+        /// backslash escape in <see cref="TelegramParseMode.MarkdownV2"/> mode), either
+        /// of which Telegram would reject as unparseable.
         /// </summary>
-        public static string Truncate(string text)
+        public static string Truncate(string text, TelegramParseMode parseMode)
         {
             if (text.Length <= MaxMessageLength)
                 return text;
 
             const string marker = "\n…";
-            return text.Substring(0, MaxMessageLength - marker.Length) + marker;
+            var cut = MaxMessageLength - marker.Length;
+
+            // Don't split a UTF-16 surrogate pair.
+            if (cut > 0 && char.IsHighSurrogate(text[cut - 1]))
+                cut--;
+
+            cut = BackUpPastPartialEscape(text, cut, parseMode);
+
+            return text.Substring(0, cut) + marker;
+        }
+
+        private static int BackUpPastPartialEscape(string text, int cut, TelegramParseMode parseMode)
+        {
+            if (cut <= 0)
+                return cut;
+
+            switch (parseMode)
+            {
+                case TelegramParseMode.Html:
+                    // If the tail contains an unterminated "&...;" entity, drop it.
+                    var amp = text.LastIndexOf('&', cut - 1);
+                    if (amp >= 0 && text.IndexOf(';', amp, cut - amp) < 0)
+                        return amp;
+                    break;
+
+                case TelegramParseMode.MarkdownV2:
+                    // A trailing run of backslashes with odd length leaves a dangling
+                    // escape (the character it escaped was truncated away).
+                    var backslashes = 0;
+                    var i = cut - 1;
+                    while (i >= 0 && text[i] == '\\')
+                    {
+                        backslashes++;
+                        i--;
+                    }
+
+                    if ((backslashes & 1) == 1)
+                        return cut - 1;
+                    break;
+            }
+
+            return cut;
         }
 
         private static string EscapeHtml(string text)

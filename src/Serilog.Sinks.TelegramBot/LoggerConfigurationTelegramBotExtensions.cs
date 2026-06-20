@@ -1,7 +1,6 @@
 using System;
 using Serilog.Configuration;
 using Serilog.Events;
-using Serilog.Sinks.PeriodicBatching;
 using Serilog.Sinks.TelegramBot;
 
 // ReSharper disable once CheckNamespace -- conventional namespace for Serilog sinks.
@@ -63,15 +62,17 @@ namespace Serilog
             options.Validate();
 
             var sink = new TelegramBotSink(options, client);
-            var batchOptions = new PeriodicBatchingSinkOptions
+
+            // Serilog 4.x batches in core; it owns and disposes the wrapped sink.
+            var batchingOptions = new BatchingOptions
             {
                 BatchSizeLimit = options.BatchSizeLimit,
-                Period = options.Period,
+                BufferingTimeLimit = options.Period,
+                QueueLimit = options.QueueLimit,
                 EagerlyEmitFirstEvent = true
             };
 
-            var batchingSink = new PeriodicBatchingSink(sink, batchOptions);
-            return sinkConfiguration.Sink(batchingSink, options.MinimumLevel);
+            return sinkConfiguration.Sink(sink, batchingOptions, options.MinimumLevel);
         }
     }
 }

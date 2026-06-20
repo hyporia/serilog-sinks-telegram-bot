@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Display;
-using Serilog.Sinks.PeriodicBatching;
 
 namespace Serilog.Sinks.TelegramBot
 {
@@ -34,7 +34,7 @@ namespace Serilog.Sinks.TelegramBot
         }
 
         /// <inheritdoc />
-        public async Task EmitBatchAsync(IEnumerable<LogEvent> batch)
+        public async Task EmitBatchAsync(IReadOnlyCollection<LogEvent> batch)
         {
             if (batch is null)
                 return;
@@ -84,7 +84,7 @@ namespace Serilog.Sinks.TelegramBot
             var text = writer.ToString().TrimEnd();
 
             var escaped = TelegramMessageFormatter.Escape(text, _options.ParseMode);
-            return TelegramMessageFormatter.Truncate(escaped);
+            return TelegramMessageFormatter.Truncate(escaped, _options.ParseMode);
         }
 
         /// <inheritdoc />

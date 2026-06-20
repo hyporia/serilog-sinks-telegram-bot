@@ -1,7 +1,10 @@
 using System;
+using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog.Debugging;
@@ -14,6 +17,13 @@ namespace Serilog.Sinks.TelegramBot
     /// </summary>
     public sealed class TelegramBotClient : ITelegramBotClient, IDisposable
     {
+        // Upper bound on how long we honour a server-supplied retry_after, so a large
+        // value can't stall shutdown indefinitely.
+        private static readonly TimeSpan MaxRetryDelay = TimeSpan.FromSeconds(60);
+
+        private static readonly Regex RetryAfterRegex =
+            new Regex("\"retry_after\"\\s*:\\s*(\\d+)", RegexOptions.Compiled);
+
         private readonly TelegramBotSinkOptions _options;
         private readonly HttpClient _httpClient;
         private readonly bool _ownsHttpClient;
@@ -21,13 +31,14 @@ namespace Serilog.Sinks.TelegramBot
 
         /// <summary>
         /// Creates a client. When <paramref name="httpClient"/> is null an internal
-        /// instance is created and disposed with this client.
+        /// instance is created (with <see cref="TelegramBotSinkOptions.RequestTimeout"/>)
+        /// and disposed with this client. An injected client keeps its own timeout.
         /// </summary>
         public TelegramBotClient(TelegramBotSinkOptions options, HttpClient? httpClient = null)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _ownsHttpClient = httpClient is null;
-            _httpClient = httpClient ?? new HttpClient();
+            _httpClient = httpClient ?? new HttpClient { Timeout = _options.RequestTimeout };
             _endpoint = new Uri(
                 $"{_options.ApiBaseUrl.TrimEnd('/')}/bot{_options.BotToken}/sendMessage");
         }
@@ -36,19 +47,74 @@ namespace Serilog.Sinks.TelegramBot
         public async Task SendMessageAsync(string text, CancellationToken cancellationToken = default)
         {
             var payload = BuildPayload(text);
-            using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            using var response = await _httpClient
-                .PostAsync(_endpoint, content, cancellationToken)
-                .ConfigureAwait(false);
+            var maxAttempts = Math.Max(0, _options.MaxSendRetries) + 1;
 
-            if (!response.IsSuccessStatusCode)
+            for (var attempt = 1; ; attempt++)
             {
+                // StringContent is single-use once posted, so build a fresh one per attempt.
+                using var content = new StringContent(payload, Encoding.UTF8, "application/json");
+                using var response = await _httpClient
+                    .PostAsync(_endpoint, content, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (response.IsSuccessStatusCode)
+                    return;
+
                 var body = await ReadBodyAsync(response).ConfigureAwait(false);
+
+                if (response.StatusCode == (HttpStatusCode)429 && attempt < maxAttempts)
+                {
+                    var delay = ResolveRetryDelay(response, body);
+                    SelfLog.WriteLine(
+                        "Serilog.Sinks.TelegramBot: rate limited (429), retrying in {0}s (attempt {1}/{2})",
+                        delay.TotalSeconds, attempt, maxAttempts);
+                    await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+
                 SelfLog.WriteLine(
                     "Serilog.Sinks.TelegramBot: sendMessage failed ({0}): {1}",
                     (int)response.StatusCode, body);
                 response.EnsureSuccessStatusCode();
+                return; // unreachable; EnsureSuccessStatusCode throws on failure.
             }
+        }
+
+        // Determines how long to wait before retrying a 429, preferring the Bot API's
+        // parameters.retry_after, then the Retry-After header, then a 1s fallback.
+        private static TimeSpan ResolveRetryDelay(HttpResponseMessage response, string body)
+        {
+            var seconds = ParseRetryAfterFromBody(body);
+
+            if (seconds is null)
+            {
+                var header = response.Headers.RetryAfter;
+                if (header?.Delta is TimeSpan delta)
+                    seconds = delta.TotalSeconds;
+                else if (header?.Date is DateTimeOffset date)
+                {
+                    var diff = date - DateTimeOffset.UtcNow;
+                    if (diff > TimeSpan.Zero)
+                        seconds = diff.TotalSeconds;
+                }
+            }
+
+            var delay = TimeSpan.FromSeconds(seconds ?? 1);
+            if (delay < TimeSpan.Zero)
+                delay = TimeSpan.Zero;
+            return delay > MaxRetryDelay ? MaxRetryDelay : delay;
+        }
+
+        private static double? ParseRetryAfterFromBody(string body)
+        {
+            if (string.IsNullOrEmpty(body))
+                return null;
+
+            var match = RetryAfterRegex.Match(body);
+            return match.Success &&
+                   double.TryParse(match.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var s)
+                ? s
+                : (double?)null;
         }
 
         private string BuildPayload(string text)
