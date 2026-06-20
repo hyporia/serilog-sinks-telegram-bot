@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+*.user
+artifacts/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# NuGet
+*.nupkg
+*.snupkg
+
+# Test results
+TestResults/
+*.trx
+[Cc]overage*/
