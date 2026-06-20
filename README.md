@@ -46,7 +46,20 @@ Log.Error(new InvalidOperationException("nope"), "Something went wrong");
 Log.CloseAndFlush(); // flushes any buffered events
 ```
 
-`chatId` may be a numeric id or a channel username such as `@my_channel`.
+### Finding your `chatId`
+
+`chatId` is a **chat** id, not a personal Telegram handle. It may be:
+
+- A **numeric id** — e.g. `987654321` for a user/group, or a negative id such as
+  `-1001234567890` for a supergroup/channel. This is the canonical form and works for
+  any chat. Find it by messaging your bot and reading `chat.id` from
+  `https://api.telegram.org/bot<token>/getUpdates`.
+- An **`@username`** — e.g. `@my_channel`. This only works for **public**
+  channels/groups that have a username; it won't work for private chats, private
+  groups, or direct messages to a user.
+
+Your own `@username` can't be used to make the bot DM you — use the numeric chat id
+from the conversation you started with the bot.
 
 ## Full configuration
 
@@ -77,7 +90,7 @@ Log.Logger = new LoggerConfiguration()
 | Option | Default | Description |
 | --- | --- | --- |
 | `BotToken` | _(required)_ | Bot token from @BotFather |
-| `ChatId` | _(required)_ | Numeric chat id or `@username` |
+| `ChatId` | _(required)_ | Numeric chat id (any chat) or public `@username` — see [Finding your `chatId`](#finding-your-chatid) |
 | `MinimumLevel` | `Warning` | Minimum level sent to Telegram |
 | `ParseMode` | `Html` | Wire encoding: `None`, `MarkdownV2`, or `Html` (see note below) |
 | `OutputTemplate` | level + timestamp + message + exception | Message rendering template |

@@ -42,8 +42,24 @@ namespace Serilog.Sinks.TelegramBot
         public string BotToken { get; set; } = string.Empty;
 
         /// <summary>
-        /// The target chat id. May be a numeric id (user/group) or a channel
-        /// username such as <c>@my_channel</c>.
+        /// The target <em>chat</em> id (not a personal Telegram handle). Accepts either:
+        /// <list type="bullet">
+        ///   <item><description>
+        ///     A numeric id — e.g. <c>987654321</c> for a user/group, or a negative id
+        ///     such as <c>-1001234567890</c> for a supergroup/channel. This is the
+        ///     canonical form and works for any chat type. The most reliable way to find
+        ///     it is to message the bot and read <c>chat.id</c> from
+        ///     <c>https://api.telegram.org/bot&lt;token&gt;/getUpdates</c>.
+        ///   </description></item>
+        ///   <item><description>
+        ///     An <c>@username</c> handle — e.g. <c>@my_channel</c>. This only works for
+        ///     <em>public</em> channels/groups that have a username; it does not work for
+        ///     private chats, private groups, or direct messages to a user.
+        ///   </description></item>
+        /// </list>
+        /// Note your own <c>@username</c> cannot be used to have the bot DM you — use the
+        /// numeric chat id from the conversation the user started with the bot. Numeric
+        /// values are sent to the API as integers; anything else is sent as a string.
         /// </summary>
         public string ChatId { get; set; } = string.Empty;
 
