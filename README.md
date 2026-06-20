@@ -90,7 +90,7 @@ Log.Logger = new LoggerConfiguration()
 | Option | Default | Description |
 | --- | --- | --- |
 | `BotToken` | _(required)_ | Bot token from @BotFather |
-| `ChatId` | _(required)_ | Numeric chat id (any chat) or public `@username` — see [Finding your `chatId`](#finding-your-chatid) |
+| `ChatId` | _(required)_ | Numeric chat id (any chat) or a **public channel/group** `@username` (not a personal handle) — see [Finding your `chatId`](#finding-your-chatid) |
 | `MinimumLevel` | `Warning` | Minimum level sent to Telegram |
 | `ParseMode` | `Html` | Wire encoding: `None`, `MarkdownV2`, or `Html` (see note below) |
 | `OutputTemplate` | level + timestamp + message + exception | Message rendering template |
