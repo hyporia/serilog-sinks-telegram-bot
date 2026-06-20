@@ -14,7 +14,7 @@ so a burst of logs does not turn into a burst of Telegram messages.
 - `HTML`, `MarkdownV2`, or plain-text formatting with automatic escaping
 - Automatic splitting / truncation to respect Telegram's 4096-character limit
 - Configurable minimum level, output template, silent delivery, and forum topics
-- Targets `netstandard2.0` and `net8.0`
+- Targets `netstandard2.0` and `net10.0`
 
 ## Installation
 
