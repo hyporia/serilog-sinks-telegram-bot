@@ -100,6 +100,69 @@ characters are escaped. Markdown/HTML markup in your `OutputTemplate` is therefo
 displayed verbatim rather than interpreted. Use `None` to send text with no
 `parse_mode` at all.
 
+## Configuration via `appsettings.json`
+
+The sink can be configured from `IConfiguration` using
+[Serilog.Settings.Configuration](https://github.com/serilog/serilog-settings-configuration):
+
+```bash
+dotnet add package Serilog.Settings.Configuration
+```
+
+```jsonc
+{
+  "Serilog": {
+    "Using": [ "Serilog.Sinks.TelegramBot" ],
+    "MinimumLevel": "Information",
+    "WriteTo": [
+      {
+        "Name": "TelegramBot",
+        "Args": {
+          "botToken": "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11",
+          "chatId": "987654321",
+          "restrictedToMinimumLevel": "Warning",
+          "parseMode": "Html",
+          "outputTemplate": "{Level:u3} {Timestamp:yyyy-MM-dd HH:mm:ss}{NewLine}{Message:lj}{NewLine}{Exception}"
+        }
+      }
+    ]
+  }
+}
+```
+
+Wire it up at startup by reading the configuration:
+
+```csharp
+using Microsoft.Extensions.Configuration;
+using Serilog;
+
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(configuration)
+    .CreateLogger();
+```
+
+In ASP.NET Core, pass the host configuration instead:
+
+```csharp
+builder.Host.UseSerilog((context, services, loggerConfiguration) =>
+    loggerConfiguration.ReadFrom.Configuration(context.Configuration));
+```
+
+> [!NOTE]
+> The `Using` array (or an assembly-scanning setup) is what lets
+> Serilog discover the `TelegramBot` sink. The `Args` keys map to the method
+> parameters above — `botToken`, `chatId`, `restrictedToMinimumLevel`, `parseMode`,
+> and `outputTemplate`. The batching, timeout, and retry knobs
+> (`BatchSizeLimit`, `Period`, `QueueLimit`, `RequestTimeout`, `MaxSendRetries`,
+> `MessageThreadId`, `DisableNotification`, `ApiBaseUrl`) are currently only
+> available through the code-based `TelegramBotSinkOptions` overload. Keep secrets
+> such as `botToken` out of source control — use user secrets, environment
+> variables, or a secrets manager.
+
 ## Diagnostics
 
 The sink reports failures through Serilog's `SelfLog`:
