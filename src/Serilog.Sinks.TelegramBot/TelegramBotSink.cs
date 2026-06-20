@@ -7,7 +7,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Display;
 
-namespace Serilog.Sinks.TelegramBot
+namespace Serilog.Sinks.Telegram.Bot
 {
     /// <summary>
     /// Batched Serilog sink that renders log events and posts them to a Telegram chat.

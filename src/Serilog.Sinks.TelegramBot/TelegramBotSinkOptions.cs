@@ -1,7 +1,7 @@
 using System;
 using Serilog.Events;
 
-namespace Serilog.Sinks.TelegramBot
+namespace Serilog.Sinks.Telegram.Bot
 {
     /// <summary>
     /// Telegram message parse modes supported by the Bot API.

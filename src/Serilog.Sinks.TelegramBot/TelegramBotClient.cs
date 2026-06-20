@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog.Debugging;
 
-namespace Serilog.Sinks.TelegramBot
+namespace Serilog.Sinks.Telegram.Bot
 {
     /// <summary>
     /// Default <see cref="ITelegramBotClient"/> that talks to the Telegram Bot API
@@ -66,14 +66,14 @@ namespace Serilog.Sinks.TelegramBot
                 {
                     var delay = ResolveRetryDelay(response, body);
                     SelfLog.WriteLine(
-                        "Serilog.Sinks.TelegramBot: rate limited (429), retrying in {0}s (attempt {1}/{2})",
+                        "Serilog.Sinks.Telegram.Bot: rate limited (429), retrying in {0}s (attempt {1}/{2})",
                         delay.TotalSeconds, attempt, maxAttempts);
                     await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
                 SelfLog.WriteLine(
-                    "Serilog.Sinks.TelegramBot: sendMessage failed ({0}): {1}",
+                    "Serilog.Sinks.Telegram.Bot: sendMessage failed ({0}): {1}",
                     (int)response.StatusCode, body);
                 response.EnsureSuccessStatusCode();
                 return; // unreachable; EnsureSuccessStatusCode throws on failure.

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Serilog.Sinks.TelegramBot
+namespace Serilog.Sinks.Telegram.Bot
 {
     /// <summary>
     /// Helpers for escaping text so it is safe to send under a given Telegram parse mode.

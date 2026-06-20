@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Serilog.Sinks.TelegramBot
+namespace Serilog.Sinks.Telegram.Bot
 {
     /// <summary>
     /// Minimal abstraction over the Telegram Bot API <c>sendMessage</c> method.

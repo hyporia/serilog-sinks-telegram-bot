@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog.Events;
 using Serilog.Parsing;
-using Serilog.Sinks.TelegramBot;
+using Serilog.Sinks.Telegram.Bot;
 using Xunit;
 
 namespace Serilog.Sinks.TelegramBot.Tests

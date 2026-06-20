@@ -1,4 +1,4 @@
-# Serilog.Sinks.TelegramBot
+# Serilog.Sinks.Telegram.Bot
 
 A [Serilog](https://serilog.net) sink that delivers log events to a Telegram chat,
 group, or channel through the [Telegram Bot API](https://core.telegram.org/bots/api).
@@ -19,7 +19,7 @@ so a burst of logs does not turn into a burst of Telegram messages.
 ## Installation
 
 ```bash
-dotnet add package Serilog.Sinks.TelegramBot
+dotnet add package Serilog.Sinks.Telegram.Bot
 ```
 
 ## Quick start
@@ -68,7 +68,7 @@ For complete control, pass `TelegramBotSinkOptions`:
 ```csharp
 using Serilog;
 using Serilog.Events;
-using Serilog.Sinks.TelegramBot;
+using Serilog.Sinks.Telegram.Bot;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.TelegramBot(new TelegramBotSinkOptions
@@ -127,7 +127,7 @@ A minimal configuration only needs the token and chat id:
 ```jsonc
 {
   "Serilog": {
-    "Using": [ "Serilog.Sinks.TelegramBot" ],
+    "Using": [ "Serilog.Sinks.Telegram.Bot" ],
     "MinimumLevel": "Information",
     "WriteTo": [
       {
@@ -147,7 +147,7 @@ Every option is bindable. `TimeSpan` values use the `hh:mm:ss` format:
 ```jsonc
 {
   "Serilog": {
-    "Using": [ "Serilog.Sinks.TelegramBot" ],
+    "Using": [ "Serilog.Sinks.Telegram.Bot" ],
     "WriteTo": [
       {
         "Name": "TelegramBot",

@@ -1,7 +1,7 @@
 using System;
 using Serilog.Configuration;
 using Serilog.Events;
-using Serilog.Sinks.TelegramBot;
+using Serilog.Sinks.Telegram.Bot;
 
 // ReSharper disable once CheckNamespace -- conventional namespace for Serilog sinks.
 namespace Serilog

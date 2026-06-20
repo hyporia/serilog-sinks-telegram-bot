@@ -1,4 +1,4 @@
-using Serilog.Sinks.TelegramBot;
+using Serilog.Sinks.Telegram.Bot;
 using Xunit;
 
 namespace Serilog.Sinks.TelegramBot.Tests

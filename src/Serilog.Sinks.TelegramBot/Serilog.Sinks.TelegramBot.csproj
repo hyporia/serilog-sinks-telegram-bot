@@ -9,6 +9,8 @@
 
     <!-- NuGet package metadata -->
     <PackageId>Serilog.Sinks.Telegram.Bot</PackageId>
+    <AssemblyName>Serilog.Sinks.Telegram.Bot</AssemblyName>
+    <RootNamespace>Serilog.Sinks.Telegram.Bot</RootNamespace>
     <Version>0.1.0</Version>
     <Authors>@hyporia</Authors>
     <Description>A Serilog sink that sends log events to a Telegram chat via the Telegram Bot API.</Description>
@@ -16,6 +18,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/hyporia/serilog-sinks-telegram-bot.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/hyporia/serilog-sinks-telegram-bot</PackageProjectUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>

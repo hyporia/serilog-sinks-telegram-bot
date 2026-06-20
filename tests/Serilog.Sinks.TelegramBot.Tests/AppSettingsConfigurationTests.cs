@@ -15,7 +15,7 @@ namespace Serilog.Sinks.TelegramBot.Tests
         {
             var settings = new Dictionary<string, string?>
             {
-                ["Serilog:Using:0"] = "Serilog.Sinks.TelegramBot",
+                ["Serilog:Using:0"] = "Serilog.Sinks.Telegram.Bot",
                 ["Serilog:MinimumLevel"] = "Information",
                 ["Serilog:WriteTo:0:Name"] = "TelegramBot",
                 ["Serilog:WriteTo:0:Args:botToken"] = "123456:ABC",
@@ -49,7 +49,7 @@ namespace Serilog.Sinks.TelegramBot.Tests
         {
             var settings = new Dictionary<string, string?>
             {
-                ["Serilog:Using:0"] = "Serilog.Sinks.TelegramBot",
+                ["Serilog:Using:0"] = "Serilog.Sinks.Telegram.Bot",
                 ["Serilog:WriteTo:0:Name"] = "TelegramBot",
                 ["Serilog:WriteTo:0:Args:botToken"] = "123456:ABC",
                 ["Serilog:WriteTo:0:Args:chatId"] = "987654321"
